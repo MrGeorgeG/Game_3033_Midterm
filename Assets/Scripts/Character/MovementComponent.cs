@@ -12,11 +12,12 @@ namespace Character
 
         private PlayerController PlayerController;
 
-        private Transform PlayerTransform;
+        public float speed = 10f;
+
+        Transform PlayerTransform;
 
         private Vector2 InputVector = Vector2.zero;
         private Vector3 MoveDirection = Vector3.zero;
-
 
         private void Awake()
         {
@@ -29,19 +30,20 @@ namespace Character
             InputVector = value.Get<Vector2>();
         }
 
-        private void Update()
+        void Update()
         {
             if (PlayerController.IsJumping) return;
 
             if (!(InputVector.magnitude > 0)) return;
 
-            MoveDirection = PlayerTransform.forward * InputVector.y + PlayerTransform .right * InputVector.x;
+            MoveDirection = PlayerTransform .right * InputVector.x;
 
             float currentSpeed = PlayerController.isRunning ? RunSpeed : walkSpeed;
 
             Vector3 movementDirection = MoveDirection * (currentSpeed * Time.deltaTime);
 
             PlayerTransform.position += movementDirection;
+
         }
 
     }

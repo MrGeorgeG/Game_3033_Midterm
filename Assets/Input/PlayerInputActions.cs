@@ -56,28 +56,6 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
                     ""isPartOfComposite"": false
                 },
                 {
-                    ""name"": ""up"",
-                    ""id"": ""31b5efb7-dcce-4139-b5aa-554507d25bec"",
-                    ""path"": ""<Keyboard>/w"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""Keyboard/Mouse"",
-                    ""action"": ""Movement"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
-                    ""name"": ""down"",
-                    ""id"": ""25866872-ddd1-4ec1-bd06-3bf913b0fbbe"",
-                    ""path"": ""<Keyboard>/s"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""Keyboard/Mouse"",
-                    ""action"": ""Movement"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
                     ""name"": ""left"",
                     ""id"": ""251a79bd-7bf6-4e4f-bf92-9786a173d171"",
                     ""path"": ""<Keyboard>/a"",
@@ -122,6 +100,66 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
                     ""isPartOfComposite"": false
                 }
             ]
+        },
+        {
+            ""name"": ""PlayerUIMap"",
+            ""id"": ""9ae0a95a-9ef9-4875-bd4b-2ec6ac4f1391"",
+            ""actions"": [
+                {
+                    ""name"": ""Click"",
+                    ""type"": ""PassThrough"",
+                    ""id"": ""85f00eb8-9f8d-4232-9c72-d85a6d7ea9b5"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """"
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": """",
+                    ""id"": ""6dc62aa0-c25a-45b6-80ab-cb8579ce2b1d"",
+                    ""path"": ""<Mouse>/leftButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""Click"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""b85a2bc1-831a-40e9-a019-31bb45a66e56"",
+                    ""path"": ""<Pen>/tip"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""Click"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""ad6c7a99-0ffb-43c5-aedd-e4fc7c173a84"",
+                    ""path"": ""<Touchscreen>/touch*/press"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Touch"",
+                    ""action"": ""Click"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""8a5fc585-5d64-4332-a0a4-1b8374a1d5be"",
+                    ""path"": ""<XRController>/trigger"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""XR"",
+                    ""action"": ""Click"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
         }
     ],
     ""controlSchemes"": [
@@ -148,6 +186,9 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
         m_PlayerActionMap_Movement = m_PlayerActionMap.FindAction("Movement", throwIfNotFound: true);
         m_PlayerActionMap_Jump = m_PlayerActionMap.FindAction("Jump", throwIfNotFound: true);
         m_PlayerActionMap_Run = m_PlayerActionMap.FindAction("Run", throwIfNotFound: true);
+        // PlayerUIMap
+        m_PlayerUIMap = asset.FindActionMap("PlayerUIMap", throwIfNotFound: true);
+        m_PlayerUIMap_Click = m_PlayerUIMap.FindAction("Click", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -242,6 +283,39 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
         }
     }
     public PlayerActionMapActions @PlayerActionMap => new PlayerActionMapActions(this);
+
+    // PlayerUIMap
+    private readonly InputActionMap m_PlayerUIMap;
+    private IPlayerUIMapActions m_PlayerUIMapActionsCallbackInterface;
+    private readonly InputAction m_PlayerUIMap_Click;
+    public struct PlayerUIMapActions
+    {
+        private @PlayerInputActions m_Wrapper;
+        public PlayerUIMapActions(@PlayerInputActions wrapper) { m_Wrapper = wrapper; }
+        public InputAction @Click => m_Wrapper.m_PlayerUIMap_Click;
+        public InputActionMap Get() { return m_Wrapper.m_PlayerUIMap; }
+        public void Enable() { Get().Enable(); }
+        public void Disable() { Get().Disable(); }
+        public bool enabled => Get().enabled;
+        public static implicit operator InputActionMap(PlayerUIMapActions set) { return set.Get(); }
+        public void SetCallbacks(IPlayerUIMapActions instance)
+        {
+            if (m_Wrapper.m_PlayerUIMapActionsCallbackInterface != null)
+            {
+                @Click.started -= m_Wrapper.m_PlayerUIMapActionsCallbackInterface.OnClick;
+                @Click.performed -= m_Wrapper.m_PlayerUIMapActionsCallbackInterface.OnClick;
+                @Click.canceled -= m_Wrapper.m_PlayerUIMapActionsCallbackInterface.OnClick;
+            }
+            m_Wrapper.m_PlayerUIMapActionsCallbackInterface = instance;
+            if (instance != null)
+            {
+                @Click.started += instance.OnClick;
+                @Click.performed += instance.OnClick;
+                @Click.canceled += instance.OnClick;
+            }
+        }
+    }
+    public PlayerUIMapActions @PlayerUIMap => new PlayerUIMapActions(this);
     private int m_KeyboardMouseSchemeIndex = -1;
     public InputControlScheme KeyboardMouseScheme
     {
@@ -256,5 +330,9 @@ public class @PlayerInputActions : IInputActionCollection, IDisposable
         void OnMovement(InputAction.CallbackContext context);
         void OnJump(InputAction.CallbackContext context);
         void OnRun(InputAction.CallbackContext context);
+    }
+    public interface IPlayerUIMapActions
+    {
+        void OnClick(InputAction.CallbackContext context);
     }
 }
