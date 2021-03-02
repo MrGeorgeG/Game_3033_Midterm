@@ -32,10 +32,7 @@ public class Player : MonoBehaviour
         if (col.tag == "Alter")
         {
             SetRandomColor();
-            if (GetColor == currentColor)
-            {
-                SetRandomColor();
-            }
+           
             Destroy(col.gameObject);
             return;
         }
